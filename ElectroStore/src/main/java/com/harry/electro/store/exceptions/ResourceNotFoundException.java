@@ -7,19 +7,14 @@ import org.springframework.http.HttpStatus;
         Harshal Bafna
  */
 public class ResourceNotFoundException extends RuntimeException {
-
     private String message;
-    private HttpStatus status;
-
     public ResourceNotFoundException() {
+        super("Resource Not Found!");
     }
-
-    public ResourceNotFoundException(String message, HttpStatus status) {
+    public ResourceNotFoundException(String message) {
         super(message);
         this.message = message;
-        this.status = status;
     }
-
     @Override
     public String getMessage() {
         return message;
@@ -29,11 +24,4 @@ public class ResourceNotFoundException extends RuntimeException {
         this.message = message;
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(HttpStatus status) {
-        this.status = status;
-    }
 }

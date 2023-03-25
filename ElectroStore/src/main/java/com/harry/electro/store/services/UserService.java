@@ -1,5 +1,6 @@
 package com.harry.electro.store.services;
 
+import com.harry.electro.store.dtos.PageableResponse;
 import com.harry.electro.store.dtos.UserDto;
 import com.harry.electro.store.entities.User;
 
@@ -18,7 +19,7 @@ public interface UserService {
 //    delete
     void deleteUser(String userId);
 //    get all
-    List<UserDto> getAllUsers();
+    PageableResponse<UserDto> getAllUsers(int pageNumber, int pageSize, String sortBy, String sortDir);
 //    get one
     UserDto getUserById(String userId);
 //    search by email

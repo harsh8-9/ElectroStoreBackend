@@ -1,12 +1,18 @@
 package com.harry.electro.store.services.impl;
 
+import com.harry.electro.store.dtos.PageableResponse;
 import com.harry.electro.store.dtos.UserDto;
 import com.harry.electro.store.entities.User;
 import com.harry.electro.store.exceptions.ResourceNotFoundException;
 import com.harry.electro.store.repositories.UserRepo;
 import com.harry.electro.store.services.UserService;
+import com.harry.electro.store.utils.PagingAndSorting;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto, String userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId, HttpStatus.NOT_FOUND));
+        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId));
         user.setName(userDto.getName());
         //email update
         user.setPassword(userDto.getPassword());
@@ -55,27 +61,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(String userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId, HttpStatus.NOT_FOUND));
+        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId));
         userRepo.delete(user);
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
-        List<User> allUsers = userRepo.findAll();
-        List<UserDto> allUsersDto = allUsers.stream().map(user -> entityToDto(user)).collect(Collectors.toList());
-        return allUsersDto;
+    public PageableResponse<UserDto> getAllUsers(int pageNumber, int pageSize, String sortBy, String sortDir) {
+        Sort sort = ("desc".equalsIgnoreCase(sortDir)) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
+        Pageable pageable = PageRequest.of(pageNumber-1, pageSize, sort);
+        Page<User> page = userRepo.findAll(pageable);
+        PageableResponse<UserDto> response = PagingAndSorting.getPageableResponse(page, UserDto.class);
+        return response;
     }
 
     @Override
     public UserDto getUserById(String userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId, HttpStatus.NOT_FOUND));
+        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User Not found with id - " + userId));
         UserDto userDto = entityToDto(user);
         return userDto;
     }
 
     @Override
     public UserDto getUserByEmail(String email) {
-        User user = userRepo.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User Not found with email - " + email, HttpStatus.NOT_FOUND));
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User Not found with email - " + email));
         return entityToDto(user);
     }
 

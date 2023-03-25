@@ -1,11 +1,13 @@
 package com.harry.electro.store.controllers;
 
 import com.harry.electro.store.dtos.ApiResponse;
+import com.harry.electro.store.dtos.PageableResponse;
 import com.harry.electro.store.dtos.UserDto;
 import com.harry.electro.store.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +16,8 @@ import javax.validation.Valid;
 import java.util.List;
 
 /*
-@author :-
-        Harshal Bafna
+ *  @author :-
+ *       Harshal Bafna
  */
 @RestController
 @RequestMapping("/users")
@@ -55,8 +57,13 @@ public class UserController {
 
     //    get all
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> allUsers = userService.getAllUsers();
+    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
+            @RequestParam(value = "pageNumber",defaultValue = "1", required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+    ) {
+        PageableResponse<UserDto> allUsers = userService.getAllUsers(pageNumber, pageSize, sortBy, sortDir);
         return ResponseEntity.ok(allUsers);
     }
 
