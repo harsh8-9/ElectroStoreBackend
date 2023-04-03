@@ -1,11 +1,9 @@
 package com.harry.electro.store.controllers;
 
-import com.harry.electro.store.dtos.ApiResponse;
-import com.harry.electro.store.dtos.CategoryDto;
-import com.harry.electro.store.dtos.ImageResponse;
-import com.harry.electro.store.dtos.PageableResponse;
+import com.harry.electro.store.dtos.*;
 import com.harry.electro.store.services.CategoryService;
 import com.harry.electro.store.services.FileService;
+import com.harry.electro.store.services.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +34,8 @@ public class CategoryController {
     private CategoryService categoryService;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private ProductService productService;
     private Logger logger = LoggerFactory.getLogger(CategoryController.class);
     @Value("${category.cover.image.path}")
     private String coverImageFilePath;
@@ -80,6 +80,19 @@ public class CategoryController {
 
     }
 
+    // get all products by category
+    @GetMapping("/{categoryId}/products")
+    public ResponseEntity<PageableResponse<ProductDto>> getAll(
+            @PathVariable String categoryId,
+            @RequestParam(value = "pageNumber", defaultValue = "1", required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "title", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir
+    ) {
+        PageableResponse<ProductDto> response = productService.getAllProducts(categoryId, pageNumber, pageSize, sortBy, sortDir);
+        return ResponseEntity.ok(response);
+    }
+
     //    get one
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable String categoryId) {
@@ -91,8 +104,13 @@ public class CategoryController {
     @PostMapping("/coverImage/{categoryId}")
     public ResponseEntity<ImageResponse> uploadCoverImage(
             @RequestParam("coverImage") MultipartFile file,
-            @PathVariable String categoryId) throws IOException {
-        String fileNameWithExtension = fileService.uploadFile(file, coverImageFilePath);
+            @PathVariable String categoryId) {
+        String fileNameWithExtension = null;
+        try {
+            fileNameWithExtension = fileService.uploadFile(file, coverImageFilePath);
+        } catch (IOException e) {
+            logger.error("Error occurred while uploading the category image - " + e.getMessage());
+        }
         CategoryDto category = categoryService.getById(categoryId);
         category.setCoverImage(fileNameWithExtension);
         categoryService.update(category, categoryId);

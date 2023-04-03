@@ -2,10 +2,8 @@ package com.harry.electro.store.entities;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Date;
 
 /*
  *  @author :-
@@ -22,12 +20,16 @@ import javax.persistence.Table;
 public class Product {
     @Id
     private String prodId;
-    private String Title;
+    private String title;
     @Column(length = 10000)
-    private String Description;
+    private String description;
     private int price;
     private int discountedPrice;
+    private Date addedDate;
     private boolean live;
     private boolean stock;
     private String productImage;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
+    private Category category;
 }

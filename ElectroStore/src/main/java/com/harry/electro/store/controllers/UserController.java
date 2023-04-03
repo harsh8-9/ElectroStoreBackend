@@ -23,6 +23,9 @@ import javax.validation.Valid;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 /*
@@ -67,7 +70,11 @@ public class UserController {
 
     //    get all
     @GetMapping
-    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(@RequestParam(value = "pageNumber", defaultValue = "1", required = false) int pageNumber, @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize, @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy, @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
+    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
+            @RequestParam(value = "pageNumber", defaultValue = "1", required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "name", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc", required = false) String sortDir) {
         PageableResponse<UserDto> allUsers = userService.getAllUsers(pageNumber, pageSize, sortBy, sortDir);
         return ResponseEntity.ok(allUsers);
     }
@@ -95,9 +102,15 @@ public class UserController {
 
     //    upload image
     @PostMapping("image/{userId}")
-    public ResponseEntity<ImageResponse> uploadUserImage(@RequestParam("userImage") MultipartFile image,
-                                                         @PathVariable String userId) throws IOException {
-        String imageName = fileService.uploadFile(image, userImageUploadPath);
+    public ResponseEntity<ImageResponse> uploadUserImage(
+            @RequestParam("userImage") MultipartFile image,
+            @PathVariable String userId) {
+        String imageName = null;
+        try {
+            imageName = fileService.uploadFile(image, userImageUploadPath);
+        } catch (IOException e) {
+            logger.error("Error occurred while uploading the user image - "+ e.getMessage());
+        }
         UserDto user = userService.getUserById(userId);
         user.setImageName(imageName);
         userService.updateUser(user, userId);

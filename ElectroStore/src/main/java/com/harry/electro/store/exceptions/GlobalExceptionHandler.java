@@ -51,7 +51,6 @@ public class GlobalExceptionHandler {
                 .success(false)
                 .status(HttpStatus.BAD_REQUEST).build();
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-
     }
 }
 
